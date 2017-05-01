@@ -48,7 +48,7 @@ protected:
 	static void sendSwapBuffersRequest(SOCKET socketID);
 	static void sendSwapBuffersNow(SOCKET socketID);
 	static void sendEventData(SOCKET socketID, VRDataQueue::serialData eventData);
-	static int sendall(SOCKET socketID, const unsigned char *buf, int len);
+	static int sendall(SOCKET socketID, const unsigned char *buf, int len); //TODO
 
 	static void waitForAndReceiveOneByte(SOCKET socketID,
 		unsigned char messageID);
@@ -94,4 +94,3 @@ public:
 }
 
 #endif
-

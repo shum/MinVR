@@ -21,6 +21,15 @@ class VRNetClient : public VRNetInterface {
 
   void syncSwapBuffersAcrossAllNodes();
 
+  // public sendall method, copy from VRNetInterface.cpp
+  int sendall(const unsigned char *buf, int len) {
+    return VRNetInterface::sendall(_socketFD, buf, len);
+  }
+
+  void sendSwapBuffersRequest() {
+    return VRNetInterface::sendSwapBuffersRequest(_socketFD);
+  }
+
  private:
 
   SOCKET _socketFD;
@@ -28,7 +37,7 @@ class VRNetClient : public VRNetInterface {
 };
 
 
-} // end namespace MinVR  
+} // end namespace MinVR
 
 
 #endif

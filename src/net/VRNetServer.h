@@ -15,7 +15,7 @@
 #include <config/VRDataIndex.h>
 
 namespace MinVR {
-  
+
 class VRNetServer : public VRNetInterface {
  public:
 
@@ -27,6 +27,12 @@ class VRNetServer : public VRNetInterface {
   VRDataQueue::serialData syncEventDataAcrossAllNodes();
 
   void syncSwapBuffersAcrossAllNodes();
+
+  int receiveall(unsigned char *buf, int len) {
+    return VRNetInterface::receiveall(_clientSocketFDs[0], buf, len);
+  }
+
+  void waitForAndReceiveSwapBuffersRequestAcrossAllNodes();
 
  private:
 
