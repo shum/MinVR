@@ -60,7 +60,8 @@ int main(int argc, char* argv[]) {
 }
 */
 
-// NOTE program to test launching multiple clients and syncEventDataAcrossAllNodes 
+// NOTE program to test launching multiple clients and syncEventDataAcrossAllNodes
+/*
 int main(int argc, char* argv[]) {
   int defaultchoice = 2; // program by default instantiates 2 clients
   int choice = defaultchoice;
@@ -98,4 +99,44 @@ int main(int argc, char* argv[]) {
     }
   }
   std::cout << "SUCCESS" << std::endl;
- }
+}
+*/
+
+int main(int argc, char* argv[]) {
+  int defaultchoice = 2; // program by default instantiates 2 clients
+  int choice = defaultchoice;
+
+  if (argc > 1) {
+    if(sscanf(argv[1], "%d", &choice) != 1) {
+      printf("Couldn't parse that input as a number\n");
+      return -1;
+    }
+  }
+
+  std::vector<pid_t> pids(choice);
+
+  // forks n processes; each process connects to server and sends a syncEventDataAcrossAllNodes
+  for (int i = 0; i < choice; i++) {
+    pids[i] = fork();
+    if (pids[i] < 0) {
+      printf("fork() faled\n");
+    } else if (pids[i] == 0) {
+      printf("Child process %d (parent %d) syncEventDataAcrossAllNodes\n", getpid(), getppid());
+    	MinVR::VRNetClient client = MinVR::VRNetClient("localhost", "3490");
+      std::cout << "SEND SWAP BUFFERS REQUEST" << std::endl;
+    	client.sendSwapBuffersRequest();
+      exit(0);
+    }
+  }
+
+  // waits for n child processes to finish running
+  for (int i = 0; i < choice; ++i) {
+    int status;
+    while (-1 == waitpid(pids[i], &status, 0));
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        cerr << "Process " << i << " (pid " << pids[i] << ") failed" << endl;
+        exit(1);
+    }
+  }
+  std::cout << "CLIENT SUCCESS" << std::endl;
+}

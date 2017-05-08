@@ -27,6 +27,9 @@ class VRNetServer : public VRNetInterface {
   VRDataQueue::serialData syncEventDataAcrossAllNodes();
 
   void syncSwapBuffersAcrossAllNodes();
+  // NOTE below method for testing
+  void syncSwapBuffersAcrossAllNodes_test();
+
 
   int receiveall(unsigned char *buf, int len) {
     return VRNetInterface::receiveall(_clientSocketFDs[0], buf, len);

@@ -287,6 +287,75 @@ void VRNetServer::syncSwapBuffersAcrossAllNodes() {
   }
 }
 
+
+void VRNetServer::syncSwapBuffersAcrossAllNodes_test() {
+	const int TOTALSOCKETS = _clientSocketFDs.size();
+	int maxfd, readcounter;
+	fd_set readfds;
+	struct timeval tv;
+
+	// clears the set
+	FD_ZERO(&readfds);
+	maxfd = 0;
+
+	// initialize the read set
+  for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();
+       itr < _clientSocketFDs.end(); itr++) {
+		FD_SET(*itr, &readfds);
+		maxfd = (maxfd > *itr) ? maxfd : *itr;
+	}
+
+	// timeout 10.5 seconds
+	tv.tv_sec = 10;
+	tv.tv_usec = 500000;
+
+	readcounter = 0;
+
+	while (readcounter < TOTALSOCKETS) {
+		// check for which sockets can be read
+		int result = select(maxfd+1, &readfds, NULL, NULL, &tv);
+		if (result == -1) {
+		   std::cerr << "Error select()" << std::endl;
+		} else if (result == 0) {
+			std::cout << "Timeout occurred! No data after 10.5 seconds." << std::endl;
+		} else {
+			for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();
+		       itr < _clientSocketFDs.end(); itr++) {
+					std::cout << *itr << '\n';
+		      if (FD_ISSET(*itr, &readfds)) {
+						// while (receivedID != VRNetInterface::SWAP_BUFFERS_REQUEST_MSG) {
+							unsigned char receivedID = 0x0;
+					    int status = VRNetInterface::receiveall(*itr, &receivedID, 1);
+
+							std::cout << *itr << status << readcounter << '\n';
+
+					    if (status == -1) {
+					      std::cerr << "NetInterface error: receiveall failed." << std::endl;
+					      exit(1);
+					    }
+					    else if ((status == 1) && (receivedID != VRNetInterface::SWAP_BUFFERS_REQUEST_MSG)) {
+					      std::cerr << "NetInterface error, unexpected message. Received: " << (int)receivedID << std::endl;
+					    } else {
+								readcounter++;
+							}
+					  // }
+		      } else {
+					std::cout << "select not ready" << '\n';
+					}
+		   }
+		}
+	}
+
+	// 2. send a swap_buffers_now message to every client
+  for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();
+       itr < _clientSocketFDs.end(); itr++) {
+    sendSwapBuffersNow(*itr);
+	}
+
+	std::cout << "SUCCESS" << '\n';
+
+}
+
 void VRNetServer::waitForAndReceiveSwapBuffersRequestAcrossAllNodes() {
 	// NOTE Testing method to check if client sendSwapBuffersRequest and server waitForAndReceiveSwapBuffersRequest work
   for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();

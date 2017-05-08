@@ -46,10 +46,12 @@ int main(int argc, char* argv[]) {
 */
 
 // NOTE program to test syncEventDataAcrossAllNodes with mulitple expected clients
+/*
 int main(int argc, char* argv[]) {
-  int defaultchoice = 2; // program by default expects 2 clients to connect
-  int choice = defaultchoice;
+  int defaultchoice = 2; //program by default expects 2 clients to connect
+  int choice = defaultchoice; //choice defines how many clients server should expect to connect
 
+  // server accepts one argument
   if (argc > 1) {
     if(sscanf(argv[1], "%d", &choice) != 1) {
       printf("Couldn't parse that input as a number\n");
@@ -60,4 +62,23 @@ int main(int argc, char* argv[]) {
 	MinVR::VRNetServer server = MinVR::VRNetServer("3490", choice);
 	MinVR::VRDataQueue::serialData eventData = server.syncEventDataAcrossAllNodes("a");
 	std::cout << "server sent: " << eventData << std::endl;
+}
+*/
+
+// NOTE program to test syncSwapBuffersAcrossAllNodes_test with mulitple expected clients
+int main(int argc, char* argv[]) {
+  int defaultchoice = 2; //program by default expects 2 clients to connect
+  int choice = defaultchoice; //choice defines how many clients server should expect to connect
+
+  // server accepts one argument
+  if (argc > 1) {
+    if(sscanf(argv[1], "%d", &choice) != 1) {
+      printf("Couldn't parse that input as a number\n");
+      return -1;
+    }
+  }
+
+	MinVR::VRNetServer server = MinVR::VRNetServer("3490", choice);
+	server.syncSwapBuffersAcrossAllNodes_test();
+  std::cout << "done" << '\n';
 }
