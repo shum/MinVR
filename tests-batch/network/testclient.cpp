@@ -2,6 +2,8 @@
 #include "config/VRDataIndex.h"
 #include "config/VRDataQueue.h"
 #include <vector>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // NOTE program to test VRNetClient receiveall
 // Intended to be used in tandem with testserver receiveall program
