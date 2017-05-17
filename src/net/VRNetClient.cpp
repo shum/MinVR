@@ -172,6 +172,7 @@ VRNetClient::syncSwapBuffersAcrossAllNodes()
 
   // 2. wait for and receive a swap_buffers_now message from the server
   waitForAndReceiveSwapBuffersNow(_socketFD);
+  std::cout << "received swap buffers now" << '\n';
 }
 
 } // end namespace MinVR

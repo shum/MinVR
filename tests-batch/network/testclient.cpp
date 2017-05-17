@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
       printf("Child process %d (parent %d) syncEventDataAcrossAllNodes\n", getpid(), getppid());
     	MinVR::VRNetClient client = MinVR::VRNetClient("localhost", "3490");
       std::cout << "SEND SWAP BUFFERS REQUEST" << std::endl;
-    	client.sendSwapBuffersRequest();
+    	client.syncSwapBuffersAcrossAllNodes();
       exit(0);
     }
   }

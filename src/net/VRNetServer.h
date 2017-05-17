@@ -13,6 +13,7 @@
 
 #include <math/VRMath.h>
 #include <config/VRDataIndex.h>
+#include <poll.h>
 
 namespace MinVR {
 

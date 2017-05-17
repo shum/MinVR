@@ -289,6 +289,8 @@ void VRNetServer::syncSwapBuffersAcrossAllNodes() {
 
 
 void VRNetServer::syncSwapBuffersAcrossAllNodes_test() {
+/*
+	NOTE deprecated select() in favor of poll() for reusability of struct
 	const int TOTALSOCKETS = _clientSocketFDs.size();
 	int maxfd, readcounter;
 	fd_set readfds;
@@ -340,11 +342,76 @@ void VRNetServer::syncSwapBuffersAcrossAllNodes_test() {
 							}
 					  // }
 		      } else {
-					std::cout << "select not ready" << '\n';
+						std::cout << "select not ready" << readcounter << '\n';
 					}
 		   }
 		}
 	}
+*/
+	const int TOTALSOCKETS = _clientSocketFDs.size();
+	struct pollfd readfds[TOTALSOCKETS];
+
+	// initialize number of file descriptors and poll timeout
+	int nfds = 0, timeout = 10000;
+	// initialize the read set
+	for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();
+			 itr < _clientSocketFDs.end(); itr++) {
+		readfds[nfds].fd = *itr;
+		readfds[nfds].events = POLLIN;
+		nfds++;
+	}
+
+	// Loop waiting for incoming data on any of the connected sockets
+	int readcounter = 0;
+	do {
+		printf("Waiting on poll() ... \n");
+		// Call poll() and wait 10 seconds for it to complete
+		int ret = poll(readfds, nfds, timeout);
+
+		// check to see if the poll call failed
+		if (ret < 0) {
+			std::cerr << "poll() failed" << std::endl;
+			break;
+		}
+		// check to see if the time out expired
+		if (ret == 0) {
+			std::cout << "poll() timed out" << std::endl;
+			break;
+		}
+
+		// one or more fds are readable, need to determine which ones
+		for (int i = 0; i < nfds; i++) {
+			// loop to find the descriptors that returned POLLIN
+			if (readfds[i].revents == 0) {
+				continue;
+			}
+
+			// if revents is not POLLIN, it's an unexpected result
+			if (readfds[i].revents != POLLIN) {
+				std::cout << "poll error, unexpected revents. Received: " << (readfds[i].revents & POLLERR) << (readfds[i].revents & POLLHUP) << std::endl;
+				exit(0);
+				break;
+			}
+
+			// Receive all incoming data on this socket before we loop back and call poll again
+			printf("FD %d is readable\n", readfds[i].fd);
+			unsigned char receivedID = 0x0;
+			int status = VRNetInterface::receiveall(readfds[i].fd, &receivedID, 1);
+			std::cout << readfds[i].fd << status << readcounter << '\n';
+
+			if (status == -1) {
+				std::cerr << "NetInterface error: receiveall failed." << std::endl;
+				exit(1);
+			}
+			else if ((status == 1) && (receivedID != VRNetInterface::SWAP_BUFFERS_REQUEST_MSG)) {
+				std::cerr << "NetInterface error, unexpected message. Received: " << (int)receivedID << std::endl;
+			}
+			// data was received and byte was a swap buffer request
+			else {
+				readcounter++;
+			}
+		}
+	} while (readcounter < TOTALSOCKETS);
 
 	// 2. send a swap_buffers_now message to every client
   for (std::vector<SOCKET>::iterator itr=_clientSocketFDs.begin();
@@ -353,7 +420,6 @@ void VRNetServer::syncSwapBuffersAcrossAllNodes_test() {
 	}
 
 	std::cout << "SUCCESS" << '\n';
-
 }
 
 void VRNetServer::waitForAndReceiveSwapBuffersRequestAcrossAllNodes() {
