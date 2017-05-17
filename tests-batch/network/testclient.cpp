@@ -136,6 +136,10 @@ int main(int argc, char* argv[]) {
     int status;
     while (-1 == waitpid(pids[i], &status, 0));
     if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        std::cout << "WIFSIGNALED" << WIFSIGNALED(status) << '\n';
+        std::cout << "WIFSTOPPED" << WIFSTOPPED(status) << '\n';
+        std::cout << "WTERMSIG" << WTERMSIG(status) << '\n';
+        std::cout << "WSTOPSIG" << WSTOPSIG(status) << '\n';
         cerr << "Process " << i << " (pid " << pids[i] << ") failed" << endl;
         exit(1);
     }
