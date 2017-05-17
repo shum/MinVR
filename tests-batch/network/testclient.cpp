@@ -117,14 +117,24 @@ int main(int argc, char* argv[]) {
 
   std::vector<pid_t> pids(choice);
 
+  srand(time(NULL));
+  std::cout << (random()) << '\n';
+
+
   // forks n processes; each process connects to server and sends a syncEventDataAcrossAllNodes
   for (int i = 0; i < choice; i++) {
     pids[i] = fork();
+    long r = random();
+
     if (pids[i] < 0) {
       printf("fork() faled\n");
     } else if (pids[i] == 0) {
       printf("Child process %d (parent %d) syncEventDataAcrossAllNodes\n", getpid(), getppid());
     	MinVR::VRNetClient client = MinVR::VRNetClient("localhost", "3490");
+      std::cout << r << '\n';
+      if (r % 2 == 0) {
+        sleep(5);
+      }
       std::cout << "SEND SWAP BUFFERS REQUEST" << std::endl;
     	client.syncSwapBuffersAcrossAllNodes();
       exit(0);

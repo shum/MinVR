@@ -408,6 +408,8 @@ void VRNetServer::syncSwapBuffersAcrossAllNodes_test() {
 			}
 			// data was received and byte was a swap buffer request
 			else {
+				//after reading from fd, remove it from the readfds set
+				readfds[i].fd = -1;
 				readcounter++;
 			}
 		}
